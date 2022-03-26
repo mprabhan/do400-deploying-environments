@@ -7,7 +7,7 @@ pipeline {
     environment {
         RHT_OCP4_DEV_USER = 'rdqcxh'
         DEPLOYMENT_STAGE = 'shopping-cart'
-        DEPLOYMENT_PRODUCTION = 'shopping-cart-production'
+        DEPLOYMENT_PRODUCTION = 'shopping-cart'
     }
     stages {
         stage('Tests') {
@@ -56,6 +56,21 @@ pipeline {
 					deployment ${DEPLOYMENT_STAGE} \
 					shopping-cart=quay.io/${QUAY_USR}/do400-deploying-environments:build-${BUILD_NUMBER} \
 					-n ${APP_NAMESPACE} --record
+				"""
+			}
+		}
+		stage('Deploy - Production') {
+			environment {
+				APP_NAMESPACE = "${RHT_OCP4_DEV_USER}-shopping-cart-production"
+				QUAY = credentials('QUAY_USER')
+			}
+			input { message 'Deploy to production?' }
+			steps {
+				sh """
+					oc set image \
+						deployment ${DEPLOYMENT_PRODUCTION} \
+						shopping-cart=quay.io/${QUAY_USR}/do400-deploying-environments:build-${BUILD_NUMBER} \
+						-n ${APP_NAMESPACE} --record
 				"""
 			}
 		}
